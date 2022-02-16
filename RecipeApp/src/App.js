@@ -1,31 +1,21 @@
 import React from 'react';
+import SplashScreen from './screens/SplashScreen';
+import {Image, StatusBar, StyleSheet, Text} from 'react-native';
 import RootStack from './RootStack';
-import SplashScreen from './screens/SplashScreen.js';
-
-export default class App extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      isVisible: true,
-    };
-  }
-
-  hideSplashScreen = () => {
-    this.setState({
-      isVisible: false,
-    });
-  };
-
-  render() {
-    const {isVisible} = this.state;
-
-    return isVisible ? <SplashScreen /> : <RootStack />;
-  }
-
-  componentDidMount() {
-    var that = this;
+import {useState, useEffect} from 'react';
+import {LogBox} from 'react-native';
+LogBox.ignoreLogs([
+  'Non-serializable values were found in the navigation state',
+  'AsyncStorage has been extracted from react-native core and will be removed in a future release',
+]);
+export default App = () => {
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
     setTimeout(function () {
-      that.hideSplashScreen();
-    }, 2000);
-  }
-}
+      StatusBar.setHidden(false);
+
+      setVisible(false);
+    }, 1500);
+  }, []);
+  return visible ? <SplashScreen /> : <RootStack />;
+};

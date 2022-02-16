@@ -1,63 +1,49 @@
-import React from "react";
+import React from 'react';
+import Category from '../components/CategoryComponent';
+import imgHeader from '../asset/header.png';
 import {
   View,
   Text,
   StyleSheet,
   ImageBackground,
+  StatusBar,
   Dimensions,
-} from "react-native";
-import LinearGradient from "react-native-linear-gradient";
-import Category from '../components/CategoryComponent';
-
-import imgHeader from '../asset/header.png';
-import imgBack from '../asset/back.png';
-
-export default class HomeScreen extends React.Component {
-  render() {
-    return (
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <ImageBackground
-            source={imgHeader}
-            style={styles.imageBackground}
-            resizeMode="contain"
-          >
-            <Text style={styles.title}>CATEGORY</Text>
-          </ImageBackground>
-        </View>
-        <View style={styles.body}>
-          <Category {...this.props} />
-        </View>
+  Platform,
+} from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+import {SafeAreaView} from 'react-native-safe-area-context';
+export default HomeScreen = ({navigation}) => {
+  return (
+    <View style={{flex: 1, backgroundColor: '#FFFD7A'}}>
+      <StatusBar
+        hidden={false}
+        backgroundColor="#FFFD7A"
+        barStyle="dark-content"
+      />
+      <ImageBackground
+        source={imgHeader}
+        style={styles.header}
+        resizeMode="contain">
+        <Text style={styles.headerText}>CATEGORY</Text>
+      </ImageBackground>
+      <View style={{flex: 1}}>
+        <Category navigation={navigation} />
       </View>
-    )
-  }
-}
-
-const width = Dimensions.get("screen").width;
-
-var styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'white'
-  },
+    </View>
+  );
+};
+const styles = StyleSheet.create({
   header: {
-    marginTop: 20,
-    position: 'absolute'
+    marginTop: Platform.OS === 'ios' ? 40 : 0,
+    height: 200,
+    width: 200,
+    alignItems: 'center',
+    position: 'relative',
   },
-  body: {
-    flex: 1,
-    marginTop: width * 0.4,
-    paddingHorizontal: 30
-  },
-  imageBackground: {
-    width: width * 0.4,
-    height: width * 0.4,
-    alignItems: 'center'
-  },
-  title: {
-    color: 'white',
-    marginTop: 25,
+  headerText: {
     fontWeight: 'bold',
-    fontSize: 25
+    color: 'white',
+    marginTop: 31,
+    fontSize: 30,
   },
 });

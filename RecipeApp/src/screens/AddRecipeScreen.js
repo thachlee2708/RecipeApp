@@ -1,248 +1,160 @@
-import React from 'react'
-import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, TextInput, AsyncStorage, Dimensions, ImageBackground } from 'react-native'
-import ImagePicker from 'react-native-image-picker'
-
+import React from 'react';
+import {
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Dimensions,
+  Alert,
+  AsyncStorage,
+  Text,
+  TextInput,
+  TouchableOpacity,
+} from 'react-native';
+import {useState, useEffect} from 'react';
+import {useIsFocused} from '@react-navigation/core';
+import {launchImageLibrary} from 'react-native-image-picker';
 import imgCamera from '../asset/camera.png';
-import imgHeader from '../asset/header.png';
 import imgBack from '../asset/back.png';
-import imgRecipe from '../asset/recipe.png';
-
-import LinearGradient from "react-native-linear-gradient";
 import dataDefault from '../data/DataDefault';
-
-
-
-export default class AddRecipeScreen extends React.Component {
-    state = {
-        photoSource: imgRecipe,
-        data: dataDefault,
-        foodName: '',
-        ingredienrts: '',
-        steps: '',
-        height: 40
-    }
-
-    arr = dataDefault;
-    id = 3
-
-    handleChoosePhoto = () => {
-        const options = {
-            noData: true, 
-        }
-        ImagePicker.launchImageLibrary(options, response => {
-            if (response.uri) {
-                let source = { uri: response.uri }
-                this.setState({ photoSource: source })
-            }
-        })
-    }
-
-    updateSize = (height) => {
-        this.setState({
-            height
-        });
-    }
-
-    storeData = async () => {
-        const { photoSource, foodName, ingredienrts, steps } = this.state;
-        const { name, refresh } = this.props.navigation.state.params;
-        console.log("PHOTO", photoSource)
-
-        this.arr.push({ id: this.id, name: foodName, image: photoSource, ingredienrts: ingredienrts, steps: steps })
-        this.id++;
-        await AsyncStorage.setItem(name, JSON.stringify(this.arr))
-        this.setState({
-            data: JSON.parse(await AsyncStorage.getItem(name))
-        })
-        console.log("STORE", this.state.data)
-        refresh();
-        this.props.navigation.navigate("RecipeListScreen",
-            {
-                name: name
-            })
-    }
-
-
-    async componentDidMount() {
-        const { name } = this.props.navigation.state.params;
-        var dataReceive = JSON.parse(await AsyncStorage.getItem(name))
-        if (name == "Soup") {
-            this.setState({
-                data: dataReceive || dataDefault,
-                data_temp: dataReceive || dataDefault,
-            })
-        } else {
-            this.setState({
-                data: dataReceive || [],
-                data_temp: dataReceive || [],
-            })
-        }
-
-        this.arr = this.state.data
-        if (this.arr.length >= 1) {
-            this.id = this.arr[this.arr.length - 1].id + 1
-        }
-
-    }
-
-    render() {
-        const { photoSource, height } = this.state
-        let newStyle = {
-            height,
-            backgroundColor: 'azure',
-            fontSize: 16,
-            marginTop: 10
-        }
-        return (
-            <View style={styles.container}>
-                <View style={styles.header}>
-                    <ImageBackground
-                        source={imgHeader}
-                        style={styles.imageBackground}
-                        resizeMode="contain"
-                    >
-                        <Text style={styles.title}>ADD RECIPE</Text>
-                    </ImageBackground>
-                </View>
-                <View style={{ alignItems: 'flex-end', height: width * 0.2, marginRight: 30 }}>
-                    <LinearGradient
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        colors={['#009245', '#8cc631']}
-                        style={styles.buttonBack}
-                    >
-                        <TouchableOpacity
-                            onPress={() => this.props.navigation.navigate("RecipeListScreen", {
-                                name: this.props.navigation.state.params.name,
-                            })}
-                            style={{ paddingHorizontal: 10, alignItems: 'center' }}>
-                            <Image source={imgBack} style={{ width: 25, height: 25, tintColor: 'white' }} />
-                        </TouchableOpacity>
-                    </LinearGradient>
-                </View>
-                <ScrollView style={styles.body}>
-                    <Text style={styles.name}>Food name :</Text>
-                    <TextInput
-                        style={{ height: 40, backgroundColor: 'azure', fontSize: 16, marginTop: 10 }}
-                        placeholder="What's your food name?"
-                        onChangeText={(foodName) => this.setState({ foodName })}
-                    />
-                    <Text style={styles.name}>Food image :</Text>
-                    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                        <View style={{ width: 400, height: 300, marginTop: 10 }}>
-                            {photoSource ?
-                                <Image
-                                    source={photoSource}
-                                    style={{ flex: 1, width: null, height: null, resizeMode: 'contain' }}
-                                />
-                                :
-                                <Image
-                                    source={imgRecipe}
-                                    style={{ flex: 1, width: null, height: null, tintColor: 'green', resizeMode: 'contain' }
-                                    }
-                                />
-                            }
-                        </View>
-                        <TouchableOpacity
-                            onPress={this.handleChoosePhoto}
-                            style={{ paddingHorizontal: 10 }}>
-                            <Image source={imgCamera} style={{ width: 30, height: 30, marginTop: 10, tintColor: 'black' }} />
-                        </TouchableOpacity>
-                    </View>
-
-                    <Text style={styles.name}>Ingredienrts :</Text>
-                    <TextInput
-                        placeholder="What are the types of ingredients?"
-                        multiline={true}
-                        onChangeText={(ingredienrts) => this.setState({ ingredienrts })}
-                        style={[newStyle]}
-                        editable={true}
-                        onContentSizeChange={(e) => this.updateSize(e.nativeEvent.contentSize.height)}
-                    />
-
-                    <Text style={styles.name}>Steps :</Text>
-
-                    <TextInput
-                        multiline={true}
-                        onChangeText={(steps) => this.setState({ steps })}
-                        placeholder="How would you do it?"
-                        style={[newStyle]}
-                        editable={true}
-                        onContentSizeChange={(e) => this.updateSize(e.nativeEvent.contentSize.height)}
-                    />
-
-                    <LinearGradient
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        colors={['#009245', '#8cc631']}
-                        style={styles.button}
-                    >
-                        <TouchableOpacity
-                            onPress={this.storeData}
-                            style={{}}>
-                            <Text style={styles.textSave}>SAVE RECIPE</Text>
-                        </TouchableOpacity>
-                    </LinearGradient>
-
-
-                </ScrollView>
-            </View>
-        )
-    }
-}
-
-const width = Dimensions.get("screen").width;
-
-var styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: 'white'
-    },
-    header: {
-        marginTop: 20,
-        position: 'absolute'
-    },
-    body: {
-        flex: 1,
-        marginTop: width * 0.3,
-        paddingHorizontal: 30
-    },
-    name: {
-        color: 'green',
-        fontWeight: 'bold',
-        fontSize: 18,
-        marginTop: 15
-    },
-    button: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 30,
-        marginBottom: 30,
-        paddingVertical: 10,
-        borderRadius: 100
-    },
-    imageBackground: {
-        width: width * 0.4,
-        height: width * 0.4,
-        alignItems: 'center'
-    },
-    title: {
-        color: 'white',
-        marginTop: 25,
-        fontWeight: 'bold',
-        fontSize: 25
-    },
-    textSave: {
-        color: 'white',
-        fontWeight: 'bold',
-        fontSize: 18
-    },
-    buttonBack: {
-        width: 45,
-        paddingVertical: 10,
-        borderBottomLeftRadius: 100,
-        borderTopLeftRadius: 100,
-        marginTop: 40
-    },
-
-});  
+const height = Dimensions.get('screen').height;
+export default AddRecipeScreen = ({navigation, route}) => {
+  const [id, setId] = useState(0);
+  const [name, setName] = useState('');
+  const [photo, setPhoto] = useState(imgCamera);
+  const [ingredients, setIngredients] = useState('');
+  const [steps, setSteps] = useState('');
+  const {category, refreshData} = route.params;
+  const [arrTemp, setArrTemp] = useState([]);
+  let arrData = [];
+  const isFocused = useIsFocused;
+  useEffect(() => {
+    getData();
+  }, [isFocused]);
+  const getData = async () => {
+    const dataReceive = await AsyncStorage.getItem(category);
+    console.log('dataReceive', dataReceive);
+    if (dataReceive !== null) arrData = JSON.parse(dataReceive);
+    if (category === 'Soup' && dataReceive === null)
+      arrData = dataDefault.slice();
+    setArrTemp(arrData);
+    const ids = arrData.map(function (i) {
+      return Number(i.id);
+    });
+    console.log('ids ', ids);
+    setId(ids.length !== 0 ? Math.max(...ids) + 1 : 0);
+  };
+  const twoOptionAlertHandler = () => {
+    Alert.alert(
+      //title
+      'Cảnh báo',
+      //body
+      'Tên công việc không được để trống!!!',
+      [
+        {
+          text: 'OK',
+          style: 'cancel',
+        },
+      ],
+      {cancelable: true},
+    );
+  };
+  const saveData = () => {
+    if (name === '') return twoOptionAlertHandler();
+    arrTemp.push({
+      id: id,
+      name: name,
+      image: photo,
+      ingredients: ingredients,
+      steps: steps,
+    });
+    AsyncStorage.setItem(category, JSON.stringify(arrTemp));
+    arrData = [];
+    refreshData();
+    navigation.navigate('RecipeListScreen', {category: category});
+  };
+  const handleChoosePhoto = () => {
+    const options = {
+      noData: true,
+    };
+    launchImageLibrary(options, response => {
+      console.log(response);
+      let source = {uri: response.uri};
+      setPhoto(source);
+    });
+  };
+  return (
+    <SafeAreaView style={styles.container}>
+      <TouchableOpacity
+        style={{paddingBottom: 5}}
+        onPress={() =>
+          navigation.navigate('RecipeListScreen', {category: category})
+        }>
+        <Image source={imgBack} style={{height: 20, width: 20, margin: 10}} />
+      </TouchableOpacity>
+      <ScrollView style={styles.scroll}>
+        <Text style={styles.text}>Food name:</Text>
+        <TextInput style={styles.textInput} onChangeText={setName} />
+        <Text style={styles.text}>Food image:</Text>
+        <TouchableOpacity
+          style={{alignItems: 'center'}}
+          onPress={() => handleChoosePhoto()}>
+          <Image
+            source={photo}
+            resizeMode="contain"
+            style={{height: 100, width: 100}}
+          />
+        </TouchableOpacity>
+        <Text style={styles.text}>Ingredients:</Text>
+        <TextInput
+          onChangeText={setIngredients}
+          style={styles.textInput}
+          placeholder="What are the types of ingredients?"
+          multiline={true}
+        />
+        <Text style={styles.text}>Steps:</Text>
+        <TextInput
+          placeholder="How would you do it?"
+          onChangeText={setSteps}
+          style={styles.textInput}
+          multiline={true}
+        />
+        <TouchableOpacity
+          style={styles.buttonContainer}
+          onPress={() => saveData()}>
+          <Text style={styles.buttonSaveText}>SAVE</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFD7A',
+  },
+  scroll: {
+    marginHorizontal: 10,
+    height: height,
+  },
+  text: {fontSize: 25, marginVertical: 10, color: 'black'},
+  textInput: {
+    color: 'black',
+    borderWidth: 1,
+    borderRadius: 8,
+    fontSize: 20,
+    padding: 15,
+  },
+  buttonContainer: {
+    marginTop: 30,
+    backgroundColor: 'green',
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  buttonSaveText: {
+    padding: 10,
+    fontWeight: 'bold',
+    color: 'white',
+    fontSize: 25,
+  },
+});

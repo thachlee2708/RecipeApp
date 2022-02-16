@@ -1,110 +1,131 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ImageBackground,
-  Dimensions,
-  Image,
-  StatusBar,
-  ScrollView,
-  TouchableOpacity
-} from "react-native";
-
-import imgHeaderDetail from '../asset/header_detail.png';
+import React from 'react';
 import imgBack from '../asset/back.png';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Dimensions,
+  ScrollView,
+  AsyncStorage,
+  View,
+} from 'react-native';
+import {launchImageLibrary} from 'react-native-image-picker';
+import {useState, useEffect} from 'react';
+import {useIsFocused} from '@react-navigation/core';
+const width = Dimensions.get('screen').width;
+const height = Dimensions.get('screen').height;
+export default DetailScreen = ({navigation, route}) => {
+  const {id, image, name, ingredients, steps, category, refreshData} =
+    route.params;
+  const [foodName, setFoodName] = useState(name);
+  const [foodPhoto, setFoodPhoto] = useState(image);
+  const [foodIngredients, setFoodIngredients] = useState(ingredients);
+  const [foodSteps, setFoodSteps] = useState(steps);
+  const [data, setData] = useState([]);
+  const isFocused = useIsFocused;
+  useEffect(() => {
+    getData();
+  }, [isFocused]);
+  const getData = async () => {
+    const dataReceive = await AsyncStorage.getItem(category);
+    console.log('dataReceive', dataReceive);
+    setData(JSON.parse(dataReceive));
+  };
 
-export default class DetailScreen extends React.Component {
-  render() {
-    const { name, image, ingredienrts, steps } = this.props.navigation.state.params;
-    return (
-      <View style={styles.container}>
-        <StatusBar barStyle="light-content" />
-        <ImageBackground
-          source={imgHeaderDetail}
-          style={{ flex: 1, alignItems: 'center', height: width * 0.7, }}
-          resizeMode={"stretch"}
-        >
-          <View style={styles.image_container}>
-            <Image
-              source={this.props.navigation.state.params.image}
-              style={styles.image}
-            />
-          </View>
-          <View style={styles.back}>
-            <TouchableOpacity
-              onPress={() => this.props.navigation.goBack()}
-              style={{ paddingHorizontal: 10 }}>
-              <Image source={imgBack} style={{ width: 25, height: 25, tintColor: 'white' }} />
-            </TouchableOpacity>
-          </View>
-        </ImageBackground>
-        
-        <ScrollView style={styles.footer}>
-          <Text numberOfLines={2} style={styles.textName}>{name.toUpperCase()}</Text>
-          <Text style={[styles.name, {marginTop:40}]}>Ingredienrts :</Text>
-          <Text style={styles.textDetail}>{ingredienrts}</Text>
-          <Text style={styles.name}>Steps :</Text>
-          <Text style={styles.textDetail}>{steps}</Text>
-        </ScrollView>
-      </View>
-    )
-  }
-}
-
-const height = Dimensions.get("screen").height;
-const width = Dimensions.get("screen").width;
-
-const height_image = width * 0.5;
-
-var styles = StyleSheet.create({
+  const saveData = () => {
+    for (a in data) {
+      if (data[a].id === id) {
+        data[a].name = foodName;
+        data[a].image = foodPhoto;
+        data[a].ingredients = foodIngredients;
+        data[a].steps = foodSteps;
+      }
+    }
+    AsyncStorage.setItem(category, JSON.stringify(data));
+    refreshData();
+    navigation.navigate('RecipeListScreen', {category: category});
+  };
+  const changePhoto = () => {
+    const options = {
+      noData: true,
+    };
+    launchImageLibrary(options, response => {
+      console.log(response);
+      let source = {uri: response.uri};
+      setFoodPhoto(source);
+    });
+  };
+  return (
+    <SafeAreaView style={styles.container}>
+      <TouchableOpacity
+        style={{paddingBottom: 5}}
+        onPress={() =>
+          navigation.navigate('RecipeListScreen', {category: category})
+        }>
+        <Image source={imgBack} style={{height: 20, width: 20, margin: 10}} />
+      </TouchableOpacity>
+      <ScrollView style={{flex: 1}}>
+        <Image
+          source={foodPhoto}
+          style={{
+            height: 300,
+            width: 300,
+            alignSelf: 'center',
+            borderWidth: 8,
+            borderRadius: 180,
+            borderColor: 'white',
+          }}
+          resizeMode="cover"
+        />
+        <Text style={styles.text}>Name:</Text>
+        <Text style={styles.textInput} onChangeText={setFoodName}>
+          {foodName}
+        </Text>
+        <Text style={styles.text}>Ingredients:</Text>
+        <Text
+          style={styles.textInput}
+          multiline={true}
+          onChangeText={setFoodIngredients}>
+          {foodIngredients}
+        </Text>
+        <Text style={styles.text}>Steps:</Text>
+        <Text
+          style={styles.textInput}
+          onChangeText={setFoodSteps}
+          multiline={true}>
+          {foodSteps}
+        </Text>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    height: height,
+    backgroundColor: '#FFFD7A',
+    padding: 10,
   },
-  footer: {
-    flex:2,
-    paddingHorizontal: 30,
+  imgButton: {
+    borderWidth: 1,
   },
-  image_container: {
-    width: height_image,
-    height: height_image,
-    marginTop: height_image / 3
+  text: {
+    fontSize: 25,
   },
-  image: {
-    width: '100%',
-    height: '100%',
-    borderWidth: 5,
-    borderColor: 'white',
-    borderRadius: height_image / 2
-  },
-  back: {
-    position: 'absolute',
-    left: 0,
-    marginTop: 30,
-    marginLeft: 15
-  },
-  textName: {
-    color: 'green',
-    fontWeight: 'bold',
-    fontSize: 30
-  },
-  textDetail: {
-    color: 'gray',
-    marginTop: 10,
-    fontSize:15
+  textInput: {
+    color: 'black',
+    fontSize: 18,
+    marginVertical: 10,
   },
   button: {
-    justifyContent: 'center',
+    backgroundColor: 'yellow',
+    padding: 10,
+    borderRadius: 8,
+    marginHorizontal: 60,
+    marginVertical: 20,
     alignItems: 'center',
-    marginTop: 30,
-    paddingVertical: 10,
-    borderRadius: 100
   },
-  name: {
-    color: 'green',
-    fontWeight: 'bold',
-    fontSize: 18,
-    marginTop: 15
-},
 });
