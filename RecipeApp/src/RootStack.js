@@ -1,11 +1,11 @@
 import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import Home from './screens/HomeScreen';
-import Detail from './screens/DetailScreen';
-import RecipeList from './screens/RecipeListScreen';
-import AddRecipe from './screens/AddRecipeScreen';
-import EditRecipe from './screens/EditRecipeScreen';
+import Home from './components/Home/HomeContainer';
+import Detail from './components/Detail/DetailContainer';
+import RecipeList from './components/RecipeList/RecipeListContainer';
+import AddRecipe from './components/AddRecipe/AddRecipeContainer';
+import EditRecipe from './components/Edit/EditRecipeContainer';
 
 const Stack = createNativeStackNavigator();
 
